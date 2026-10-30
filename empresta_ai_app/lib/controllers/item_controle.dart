@@ -1,0 +1,46 @@
+import 'package:flutter/foundation.dart';
+
+import '../dados/itens_exemplo.dart';
+import '../models/item.dart';
+
+/// Camada Controller dos itens: busca, pedir e devolver.
+/// Quando algo muda, chama notifyListeners() e as telas se redesenham.
+class ItensController extends ChangeNotifier {
+  final List<Item> itens = itensDeExemplo();
+  final List<Item> meusPedidos = [];
+  String _busca = '';
+
+  List<Item> get itens {
+    if (_busca.isEmpty) return List.unmodifiable(_itens);
+    final termo = _busca.toLowerCase();
+    return _itens
+        .where(
+          (i) =>
+              i.nome.toLowerCase().contains(termo) ||
+              i.categoria.toLowerCase().contains(termo),
+        )
+        .toList();
+  }
+
+  List<Item> get meusPedidos => List.unmodifiable(_meusPedidos);
+
+  void buscar(String texto) {
+    _busca = texto.trim();
+    notifyListeners();
+  }
+
+  /// Retorna false se o item já não estava disponível.
+  bool pedir(Item item) {
+    if (!item.disponivel) return false;
+    item.disponivel = false;
+    _meusPedidos.add(item);
+    notifyListeners();
+    return true;
+  }
+
+  void devolver(Item item) {
+    item.disponivel = true;
+    _meusPedidos.remove(item);
+    notifyListeners();
+  }
+}
